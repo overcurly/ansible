@@ -1,0 +1,40 @@
+---
+- hosts: solr
+  become: true
+  vars:
+    ansible_user: ubuntu
+
+  tasks:
+    - name: Install Packages
+      apt:
+        name:
+          - git
+          - pyton3-pip
+          - docker
+        state: present
+
+    - name: Clone the repository
+      git:
+        repo: "https://github.com/ProblemSetters/devops-inventory"
+        version: "1308037-ansible"
+        dest: "/home/ubuntu/app"
+      vars:
+        ansible_user: ubuntu
+      become: no
+
+    - name: Build executable
+      docker_container:
+        image: gcc:latest
+        name: tokenizer
+        state: started
+        env:
+          HACKERAPI_SECURITY_TOKEN: "{{ lookup('env', 'HACKERAPI_SECURITY_TOKEN' ) }}"
+          HOSTNAME: "{{ ansible_hostname }}"
+        volumes:
+          - "{{ lookup('env', 'HACKERAPI_BUILD_DIR' ) }}:/home/ubuntu/app"
+        command: "gcc -o /home/ubuntu/app/hackerapi /home/ubuntu/app/hackerapi.c"
+#        command: "sleep infinity"
+        debug: true
+
+    - name: Execute
+      shell: "/home/ubuntu/app/hackerapi"

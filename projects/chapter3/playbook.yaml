@@ -1,0 +1,46 @@
+---
+- name: Install Apache
+  hosts: all
+  become: yes
+  vars:
+    ansible_user: ubuntu
+
+  tasks:
+#    - name: Update and Upgrade apt packages
+#      apt:
+#        upgrade: yes
+#        update_cache: yes
+#        cache_valid_time:
+    - name: Update sshd config
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "^UseDNS"
+        line: "UseDNS no"
+        insertafter: EOF
+        state: present
+    - name: Install Apache
+      apt:
+        name:
+          - apache2
+          - apache2-dev
+        state: present
+        update_cache: yes
+
+    - name: Copy Configuration files
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items:
+        - src: httpd.conf
+          dest: /etc/apache2/httpd.conf
+        - src: httpd-vhosts.com
+          dest: /etc/apache2/httpd-vhosts.com
+
+    - name: Make sure Apache is started now and at boot
+      service:
+        name: apache2
+        state: started
+        enabled: true

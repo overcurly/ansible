@@ -1,0 +1,15 @@
+# Application servers
+[app]
+172.25.0.101
+172.25.0.102
+
+# Database servers
+[db]
+172.25.0.201
+
+# Group has all the servers
+[multi:children]
+app
+db
+
+

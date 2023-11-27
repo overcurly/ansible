@@ -1,0 +1,13 @@
+---
+- hosts: multi
+  module_defaults:
+    ansible.builtin.setup:
+      gather_subset: min
+#  become: yes
+  tasks:
+    - name: Ensure Chrony is installed
+      yum: name=chrony state=present
+    - name: Daemon reload
+      systemd: daemon_reload=true
+    - name: Ensure Chrony is running
+      service: name=chronyd state=started enabled=yes

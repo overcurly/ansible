@@ -1,0 +1,57 @@
+version: "3.8"
+services:
+  controller:
+    image: willhallonline/ansible
+    command: tail -f /dev/null
+    hostname: orc-controller.test
+    platform: linux/amd64
+    volumes:
+      - ~/ansible:/ansible
+      - ./.ssh:/root/.ssh
+    networks:
+      mynet:
+        ipv4_address: 172.25.0.11
+  app1:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    image: mali/ubuntu-sshd
+    hostname: orc-app1.test
+    cgroup: host
+    platform: linux/amd64
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    networks:
+      mynet:
+        ipv4_address: 172.25.0.101
+  app2:
+    image: mali/ubuntu-sshd
+    hostname: orc-app2.test
+    cgroup: host
+    platform: linux/amd64
+    privileged: true
+    ports:
+      - 8983:8983
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    networks:
+      mynet:
+        ipv4_address: 172.25.0.102
+  db:
+    image: mali/ubuntu-sshd
+    hostname: orc-db.test
+    cgroup: host
+    platform: linux/amd64
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    networks:
+      mynet:
+        ipv4_address: 172.25.0.201
+networks:
+  mynet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/24
